@@ -18,12 +18,27 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+// Import images
+import mintTeaImg from "@/assets/mint-tea.jpg";
+import coffeeImg from "@/assets/coffee.jpg";
+import orangeJuiceImg from "@/assets/orange-juice.jpg";
+import avocadoSmoothieImg from "@/assets/avocado-smoothie.jpg";
+import msemenImg from "@/assets/msemen.jpg";
+import baghirirImg from "@/assets/baghrir.jpg";
+import harchaImg from "@/assets/harcha.jpg";
+import croissantImg from "@/assets/croissant.jpg";
+import bissaraImg from "@/assets/bissara.jpg";
+import moroccanBreakfastImg from "@/assets/moroccan-breakfast.jpg";
+import chebakaImg from "@/assets/chebakia.jpg";
+import baklavaImg from "@/assets/baklava.jpg";
+
 interface MenuItem {
   id: string;
   name: string;
   price: number;
   category: string;
   nameAr?: string;
+  image?: string;
 }
 
 interface OrderItem extends MenuItem {
@@ -33,33 +48,37 @@ interface OrderItem extends MenuItem {
 
 const Order = () => {
   const navigate = useNavigate();
-  const { tableId } = useParams();
+  const { tableId = "takeaway" } = useParams();
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   
   const menuItems: MenuItem[] = [
-    // Hot Drinks
-    { id: "1", name: "Mint Tea", nameAr: "شاي بالنعناع", price: 10, category: "hot" },
-    { id: "2", name: "Coffee", nameAr: "قهوة", price: 15, category: "hot" },
+    // Hot Drinks - المشروبات الساخنة
+    { id: "1", name: "Mint Tea", nameAr: "شاي بالنعناع", price: 10, category: "hot", image: mintTeaImg },
+    { id: "2", name: "Coffee", nameAr: "قهوة", price: 15, category: "hot", image: coffeeImg },
     { id: "3", name: "Espresso", nameAr: "إسبريسو", price: 12, category: "hot" },
     { id: "4", name: "Cappuccino", nameAr: "كابتشينو", price: 20, category: "hot" },
     
-    // Cold Drinks
-    { id: "5", name: "Fresh Orange Juice", nameAr: "عصير برتقال طبيعي", price: 25, category: "cold" },
-    { id: "6", name: "Avocado Smoothie", nameAr: "عصير الأفوكادو", price: 30, category: "cold" },
+    // Cold Drinks - المشروبات الباردة
+    { id: "5", name: "Fresh Orange Juice", nameAr: "عصير برتقال طبيعي", price: 25, category: "cold", image: orangeJuiceImg },
+    { id: "6", name: "Avocado Smoothie", nameAr: "عصير الأفوكادو", price: 30, category: "cold", image: avocadoSmoothieImg },
     { id: "7", name: "Iced Coffee", nameAr: "قهوة مثلجة", price: 22, category: "cold" },
     { id: "8", name: "Mint Lemonade", nameAr: "ليمونادة بالنعناع", price: 18, category: "cold" },
     
-    // Moroccan Dishes
-    { id: "9", name: "Tagine", nameAr: "طاجين", price: 65, category: "food" },
-    { id: "10", name: "Couscous", nameAr: "كسكس", price: 70, category: "food" },
-    { id: "11", name: "Harira Soup", nameAr: "حريرة", price: 20, category: "food" },
-    { id: "12", name: "Moroccan Salad", nameAr: "سلطة مغربية", price: 25, category: "food" },
+    // Traditional Moroccan Breakfast - الفطور المغربي التقليدي
+    { id: "9", name: "Msemen", nameAr: "مسمن", price: 8, category: "food", image: msemenImg },
+    { id: "10", name: "Baghrir", nameAr: "بغرير", price: 10, category: "food", image: baghirirImg },
+    { id: "11", name: "Harcha", nameAr: "حرشة", price: 8, category: "food", image: harchaImg },
+    { id: "12", name: "Croissant", nameAr: "كرواسون", price: 12, category: "food", image: croissantImg },
+    { id: "13", name: "Moroccan Breakfast Platter", nameAr: "طبق الفطور المغربي", price: 45, category: "food", image: moroccanBreakfastImg },
+    { id: "14", name: "Bissara Soup", nameAr: "بيصارة", price: 15, category: "food", image: bissaraImg },
+    { id: "15", name: "Fried Eggs with Khlea", nameAr: "بيض بالقديد", price: 25, category: "food" },
+    { id: "16", name: "Amlou with Bread", nameAr: "أملو بالخبز", price: 20, category: "food" },
     
-    // Desserts
-    { id: "13", name: "Baklava", nameAr: "بقلاوة", price: 15, category: "dessert" },
-    { id: "14", name: "Chebakia", nameAr: "شباكية", price: 12, category: "dessert" },
-    { id: "15", name: "Sellou", nameAr: "سلو", price: 18, category: "dessert" },
-    { id: "16", name: "Moroccan Cookies", nameAr: "حلويات مغربية", price: 20, category: "dessert" },
+    // Desserts - الحلويات
+    { id: "17", name: "Chebakia", nameAr: "شباكية", price: 12, category: "dessert", image: chebakaImg },
+    { id: "18", name: "Baklava", nameAr: "بقلاوة", price: 15, category: "dessert", image: baklavaImg },
+    { id: "19", name: "Sellou", nameAr: "سلو", price: 18, category: "dessert" },
+    { id: "20", name: "Moroccan Cookies", nameAr: "حلويات مغربية", price: 20, category: "dessert" },
   ];
 
   const addToOrder = (item: MenuItem) => {
@@ -172,19 +191,30 @@ const Order = () => {
                       .map((item) => (
                         <Card
                           key={item.id}
-                          className="shadow-card hover:shadow-elevated transition-all cursor-pointer active:scale-95"
+                          className="shadow-card hover:shadow-elevated transition-all cursor-pointer active:scale-95 overflow-hidden"
                           onClick={() => addToOrder(item)}
                         >
-                          <CardContent className="p-4 space-y-2">
-                            <div className="flex items-start justify-between">
-                              {getCategoryIcon(item.category)}
-                              <span className="text-lg font-bold text-primary">{item.price} DH</span>
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-base">{item.name}</h3>
-                              {item.nameAr && (
-                                <p className="text-sm text-muted-foreground" dir="rtl">{item.nameAr}</p>
-                              )}
+                          <CardContent className="p-0">
+                            {item.image && (
+                              <div className="aspect-square w-full overflow-hidden">
+                                <img 
+                                  src={item.image} 
+                                  alt={item.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                            <div className="p-4 space-y-2">
+                              <div className="flex items-start justify-between">
+                                {!item.image && getCategoryIcon(item.category)}
+                                <span className="text-lg font-bold text-primary">{item.price} DH</span>
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-base">{item.name}</h3>
+                                {item.nameAr && (
+                                  <p className="text-sm text-muted-foreground" dir="rtl">{item.nameAr}</p>
+                                )}
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
