@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,7 @@ interface Table {
 }
 
 const Dashboard = () => {
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const [tables] = useState<Table[]>([
     { id: "1", number: 1, status: "occupied", guests: 4, orderValue: 245, duration: "25m" },
     { id: "2", number: 2, status: "available" },
@@ -83,7 +83,7 @@ const Dashboard = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/")}
+            onClick={() => setLocation("/")}
           >
             <LogOut className="h-5 w-5" />
           </Button>
@@ -141,7 +141,7 @@ const Dashboard = () => {
             variant="touch"
             size="touch"
             className="h-full min-h-[100px]"
-            onClick={() => navigate("/order/takeaway")}
+            onClick={() => setLocation("/order/takeaway")}
           >
             <div className="flex flex-col items-center gap-2">
               <ShoppingBag className="h-8 w-8" />
@@ -162,9 +162,9 @@ const Dashboard = () => {
                 }`}
                 onClick={() => {
                   if (table.status === "occupied") {
-                    navigate(`/order/${table.id}`);
+                    setLocation(`/order/${table.id}`);
                   } else if (table.status === "available") {
-                    navigate(`/order/${table.id}`);
+                    setLocation(`/order/${table.id}`);
                   }
                 }}
               >
@@ -225,28 +225,28 @@ const Dashboard = () => {
             <Button
               variant="outline"
               size="touch"
-              onClick={() => navigate("/kitchen")}
+              onClick={() => setLocation("/kitchen")}
             >
               Kitchen Display
             </Button>
             <Button
               variant="outline"
               size="touch"
-              onClick={() => navigate("/reports")}
+              onClick={() => setLocation("/reports")}
             >
               Sales Report
             </Button>
             <Button
               variant="outline"
               size="touch"
-              onClick={() => navigate("/menu")}
+              onClick={() => setLocation("/menu")}
             >
               Manage Menu
             </Button>
             <Button
               variant="outline"
               size="touch"
-              onClick={() => navigate("/settings")}
+              onClick={() => setLocation("/settings")}
             >
               Settings
             </Button>
