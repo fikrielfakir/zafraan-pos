@@ -1,27 +1,14 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Roles
+// Tables without foreign keys first
 export const roles = pgTable("roles", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
   permissions: jsonb("permissions").notNull().default('[]'),
 });
 
-// Users
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  pin: text("pin"),
-  roleId: integer("role_id").notNull().references(() => roles.id),
-  branchId: integer("branch_id").references(() => branches.id),
-  active: boolean("active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-// Branches
 export const branches = pgTable("branches", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -30,29 +17,14 @@ export const branches = pgTable("branches", {
   active: boolean("active").default(true).notNull(),
 });
 
-// Terminals
-export const terminals = pgTable("terminals", {
+export const paymentTypes = pgTable("payment_types", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  code: text("code").notNull().unique(),
-  branchId: integer("branch_id").notNull().references(() => branches.id),
-  type: text("type").notNull().default("pos"),
+  nameAr: text("name_ar"),
+  nameFr: text("name_fr"),
   active: boolean("active").default(true).notNull(),
-  settings: jsonb("settings").default('{}'),
 });
 
-// Tables
-export const tables = pgTable("tables", {
-  id: serial("id").primaryKey(),
-  branchId: integer("branch_id").notNull().references(() => branches.id),
-  number: integer("number").notNull(),
-  name: text("name").notNull(),
-  capacity: integer("capacity").default(4),
-  status: text("status").notNull().default("available"),
-  position: jsonb("position").default('{"x": 0, "y": 0}'),
-});
-
-// Menu Categories
 export const menuCategories = pgTable("menu_categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -63,10 +35,41 @@ export const menuCategories = pgTable("menu_categories", {
   active: boolean("active").default(true).notNull(),
 });
 
-// Menu Items
+// Tables with foreign keys
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  pin: text("pin"),
+  roleId: integer("role_id").notNull(),
+  branchId: integer("branch_id"),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const terminals = pgTable("terminals", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  code: text("code").notNull().unique(),
+  branchId: integer("branch_id").notNull(),
+  type: text("type").notNull().default("pos"),
+  active: boolean("active").default(true).notNull(),
+  settings: jsonb("settings").default('{}'),
+});
+
+export const tables = pgTable("tables", {
+  id: serial("id").primaryKey(),
+  branchId: integer("branch_id").notNull(),
+  number: integer("number").notNull(),
+  name: text("name").notNull(),
+  capacity: integer("capacity").default(4),
+  status: text("status").notNull().default("available"),
+  position: jsonb("position").default('{"x": 0, "y": 0}'),
+});
+
 export const menuItems = pgTable("menu_items", {
   id: serial("id").primaryKey(),
-  categoryId: integer("category_id").notNull().references(() => menuCategories.id),
+  categoryId: integer("category_id").notNull(),
   name: text("name").notNull(),
   nameAr: text("name_ar"),
   nameFr: text("name_fr"),
@@ -79,26 +82,24 @@ export const menuItems = pgTable("menu_items", {
   displayOrder: integer("display_order").default(0),
 });
 
-// Modifiers (extras, add-ons)
 export const modifiers = pgTable("modifiers", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   nameAr: text("name_ar"),
   nameFr: text("name_fr"),
   price: integer("price").notNull().default(0),
-  menuItemId: integer("menu_item_id").references(() => menuItems.id),
+  menuItemId: integer("menu_item_id"),
   active: boolean("active").default(true).notNull(),
 });
 
-// Orders
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   orderNumber: text("order_number").notNull().unique(),
-  tableId: integer("table_id").references(() => tables.id),
+  tableId: integer("table_id"),
   tableIdentifier: text("table_identifier"),
-  branchId: integer("branch_id").notNull().references(() => branches.id),
-  terminalId: integer("terminal_id").references(() => terminals.id),
-  userId: integer("user_id").references(() => users.id),
+  branchId: integer("branch_id").notNull(),
+  terminalId: integer("terminal_id"),
+  userId: integer("user_id"),
   type: text("type").notNull().default("dine-in"),
   status: text("status").notNull().default("pending"),
   subtotal: integer("subtotal").notNull().default(0),
@@ -111,11 +112,10 @@ export const orders = pgTable("orders", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Order Items
 export const orderItems = pgTable("order_items", {
   id: serial("id").primaryKey(),
-  orderId: integer("order_id").notNull().references(() => orders.id),
-  menuItemId: integer("menu_item_id").notNull().references(() => menuItems.id),
+  orderId: integer("order_id").notNull(),
+  menuItemId: integer("menu_item_id").notNull(),
   quantity: integer("quantity").notNull().default(1),
   price: integer("price").notNull(),
   notes: text("notes"),
@@ -123,32 +123,21 @@ export const orderItems = pgTable("order_items", {
   modifiers: jsonb("modifiers").default('[]'),
 });
 
-// Payments
 export const payments = pgTable("payments", {
   id: serial("id").primaryKey(),
-  orderId: integer("order_id").notNull().references(() => orders.id),
-  paymentTypeId: integer("payment_type_id").notNull().references(() => paymentTypes.id),
+  orderId: integer("order_id").notNull(),
+  paymentTypeId: integer("payment_type_id").notNull(),
   amount: integer("amount").notNull(),
   tipAmount: integer("tip_amount").notNull().default(0),
   reference: text("reference"),
-  userId: integer("user_id").references(() => users.id),
+  userId: integer("user_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Payment Types
-export const paymentTypes = pgTable("payment_types", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  nameAr: text("name_ar"),
-  nameFr: text("name_fr"),
-  active: boolean("active").default(true).notNull(),
-});
-
-// Printers
 export const printers = pgTable("printers", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  terminalId: integer("terminal_id").references(() => terminals.id),
+  terminalId: integer("terminal_id"),
   connectionType: text("connection_type").notNull(),
   address: text("address"),
   model: text("model"),
@@ -157,7 +146,6 @@ export const printers = pgTable("printers", {
   active: boolean("active").default(true).notNull(),
 });
 
-// Settings
 export const settings = pgTable("settings", {
   id: serial("id").primaryKey(),
   key: text("key").notNull().unique(),
@@ -166,11 +154,10 @@ export const settings = pgTable("settings", {
   description: text("description"),
 });
 
-// Shifts
 export const shifts = pgTable("shifts", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  terminalId: integer("terminal_id").references(() => terminals.id),
+  userId: integer("user_id").notNull(),
+  terminalId: integer("terminal_id"),
   startTime: timestamp("start_time").notNull().defaultNow(),
   endTime: timestamp("end_time"),
   startingCash: integer("starting_cash").notNull().default(0),
@@ -180,10 +167,9 @@ export const shifts = pgTable("shifts", {
   status: text("status").notNull().default("open"),
 });
 
-// Audit Logs
 export const auditLogs = pgTable("audit_logs", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: integer("user_id"),
   action: text("action").notNull(),
   entityType: text("entity_type").notNull(),
   entityId: integer("entity_id"),
@@ -192,10 +178,9 @@ export const auditLogs = pgTable("audit_logs", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Offline Queue
 export const offlineQueue = pgTable("offline_queue", {
   id: serial("id").primaryKey(),
-  terminalId: integer("terminal_id").notNull().references(() => terminals.id),
+  terminalId: integer("terminal_id").notNull(),
   action: text("action").notNull(),
   entityType: text("entity_type").notNull(),
   data: jsonb("data").notNull(),
