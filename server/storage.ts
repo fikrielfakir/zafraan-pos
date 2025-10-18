@@ -438,7 +438,7 @@ export class MemStorage implements IStorage {
   }
 
   async createOrderItem(item: InsertOrderItem): Promise<OrderItem> {
-    const newItem: OrderItem = { ...item, id: this.nextId.orderItems++ };
+    const newItem: OrderItem = { id: this.nextId.orderItems++, ...item };
     this.orderItems.push(newItem);
     return newItem;
   }
@@ -459,7 +459,7 @@ export class MemStorage implements IStorage {
   }
 
   async createPayment(payment: InsertPayment): Promise<Payment> {
-    const newPayment: Payment = { ...payment, id: this.nextId.payments++, createdAt: new Date() };
+    const newPayment: Payment = { id: this.nextId.payments++, createdAt: new Date(), ...payment };
     this.payments.push(newPayment);
     return newPayment;
   }
@@ -470,7 +470,7 @@ export class MemStorage implements IStorage {
   }
 
   async createPaymentType(type: InsertPaymentType): Promise<PaymentType> {
-    const newType: PaymentType = { ...type, id: this.nextId.paymentTypes++ };
+    const newType: PaymentType = { id: this.nextId.paymentTypes++, ...type };
     this.paymentTypes.push(newType);
     return newType;
   }
@@ -488,7 +488,7 @@ export class MemStorage implements IStorage {
   }
 
   async createPrinter(printer: InsertPrinter): Promise<Printer> {
-    const newPrinter: Printer = { ...printer, id: this.nextId.printers++ };
+    const newPrinter: Printer = { id: this.nextId.printers++, ...printer };
     this.printers.push(newPrinter);
     return newPrinter;
   }
@@ -518,7 +518,7 @@ export class MemStorage implements IStorage {
       this.settings[index] = { ...this.settings[index], ...setting };
       return this.settings[index];
     }
-    const newSetting: Setting = { ...setting, id: this.nextId.settings++ };
+    const newSetting: Setting = { id: this.nextId.settings++, ...setting };
     this.settings.push(newSetting);
     return newSetting;
   }
@@ -540,7 +540,7 @@ export class MemStorage implements IStorage {
   }
 
   async createShift(shift: InsertShift): Promise<Shift> {
-    const newShift: Shift = { ...shift, id: this.nextId.shifts++, startTime: new Date() };
+    const newShift: Shift = { id: this.nextId.shifts++, startTime: new Date(), ...shift };
     this.shifts.push(newShift);
     return newShift;
   }
@@ -565,7 +565,7 @@ export class MemStorage implements IStorage {
   }
 
   async createAuditLog(log: InsertAuditLog): Promise<AuditLog> {
-    const newLog: AuditLog = { ...log, id: this.nextId.auditLogs++, createdAt: new Date() };
+    const newLog: AuditLog = { id: this.nextId.auditLogs++, createdAt: new Date(), ...log };
     this.auditLogs.push(newLog);
     return newLog;
   }
@@ -576,7 +576,7 @@ export class MemStorage implements IStorage {
   }
 
   async createOfflineQueueItem(item: InsertOfflineQueueItem): Promise<OfflineQueueItem> {
-    const newItem: OfflineQueueItem = { ...item, id: this.nextId.offlineQueue++, createdAt: new Date(), processedAt: null };
+    const newItem: OfflineQueueItem = { id: this.nextId.offlineQueue++, createdAt: new Date(), processedAt: null, ...item };
     this.offlineQueue.push(newItem);
     return newItem;
   }
