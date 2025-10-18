@@ -216,7 +216,7 @@ export class MemStorage implements IStorage {
   }
 
   async createRole(role: InsertRole): Promise<Role> {
-    const newRole: Role = { ...role, id: this.nextId.roles++ };
+    const newRole: Role = { id: this.nextId.roles++, ...role };
     this.roles.push(newRole);
     return newRole;
   }
@@ -261,7 +261,7 @@ export class MemStorage implements IStorage {
   }
 
   async createBranch(branch: InsertBranch): Promise<Branch> {
-    const newBranch: Branch = { ...branch, id: this.nextId.branches++ };
+    const newBranch: Branch = { id: this.nextId.branches++, ...branch };
     this.branches.push(newBranch);
     return newBranch;
   }
@@ -287,7 +287,7 @@ export class MemStorage implements IStorage {
   }
 
   async createTerminal(terminal: InsertTerminal): Promise<Terminal> {
-    const newTerminal: Terminal = { ...terminal, id: this.nextId.terminals++ };
+    const newTerminal: Terminal = { id: this.nextId.terminals++, ...terminal };
     this.terminals.push(newTerminal);
     return newTerminal;
   }
@@ -312,7 +312,7 @@ export class MemStorage implements IStorage {
   }
 
   async createTable(table: InsertTable): Promise<Table> {
-    const newTable: Table = { ...table, id: this.nextId.tables++ };
+    const newTable: Table = { id: this.nextId.tables++, ...table };
     this.tables.push(newTable);
     return newTable;
   }
@@ -334,7 +334,7 @@ export class MemStorage implements IStorage {
   }
 
   async createMenuCategory(category: InsertMenuCategory): Promise<MenuCategory> {
-    const newCategory: MenuCategory = { ...category, id: this.nextId.menuCategories++ };
+    const newCategory: MenuCategory = { id: this.nextId.menuCategories++, ...category };
     this.menuCategories.push(newCategory);
     return newCategory;
   }
@@ -384,7 +384,7 @@ export class MemStorage implements IStorage {
   }
 
   async createModifier(modifier: InsertModifier): Promise<Modifier> {
-    const newModifier: Modifier = { ...modifier, id: this.nextId.modifiers++ };
+    const newModifier: Modifier = { id: this.nextId.modifiers++, ...modifier };
     this.modifiers.push(newModifier);
     return newModifier;
   }
