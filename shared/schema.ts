@@ -21,10 +21,11 @@ export const orders = pgTable("orders", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export type MenuItem = typeof menuItems.$inferSelect;
+export type Order = typeof orders.$inferSelect;
+
 export const insertMenuItemSchema = createInsertSchema(menuItems).omit({ id: true });
 export type InsertMenuItem = z.infer<typeof insertMenuItemSchema>;
-export type MenuItem = typeof menuItems.$inferSelect;
 
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true });
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
-export type Order = typeof orders.$inferSelect;

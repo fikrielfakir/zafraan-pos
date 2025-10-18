@@ -1,0 +1,243 @@
+fast workflow, full backend (APIs, DB), app settings and customization, and robust printing support (Bluetooth & USB). Support Arabic & French (RTL where needed).
+
+1 — High-level Requirements
+
+Tablet-optimized, touch-first UX with large buttons and short flows (≤3 taps to add common items).
+
+Roles: Admin, Manager, Waiter/Cashier, Kitchen (KDS).
+
+Multi-language: Arabic (RTL) + French (switchable per user).
+
+Work offline for short periods (orders queued and synced).
+
+Secure authentication (PIN shortcut for staff; JWT tokens for API).
+
+Fully working backend: REST (or GraphQL) APIs, DB migrations, auth, roles, audit logs.
+
+Settings & customization available in Admin panel (branding, menu, taxes, receipts, printer config).
+
+Print support: Bluetooth (Classic & BLE) and USB. Use ESC/POS for thermal printers; fallback to PDF/A4 receipt print.
+
+Lightweight local kiosk mode for tablets used by waiters.
+
+2 — Backend & Architecture (what must be implemented)
+
+Stack suggestions (example, replace as preferred): Node.js/Express or Laravel (PHP) or Django/Flask, Postgres or MySQL, Redis for caching/queue, and optional message queue (RabbitMQ) for kitchen notification.
+
+Core backend features
+
+Authentication: JWT + refresh tokens; staff PIN login for devices (PIN maps to user JWT).
+
+User & Roles: CRUD users, assign roles, permissions.
+
+Multi-branch & multi-terminal: Branch table + terminal registration (each tablet registers as terminal).
+
+Menu management: categories, items, modifiers (extras), prices per branch, images.
+
+Orders & Tables: Create/update orders, order items (status), table layout state, split/merge bills.
+
+Payments: Record payment transactions, payment types (cash, card, mobile), partial payments, tips.
+
+KDS / Kitchen jobs: Orders routed to kitchen screens with status updates.
+
+Reports: Daily sales, item sales, payments summary, staff shifts, Z/X reports.
+
+Settings & Customization API: brandName/logo, colors, receipt header/footer, tax rates, currency, language defaults, printer configs.
+
+Printer management: Save printer profiles per terminal (type, connection, protocol).
+
+Device sync & offline queue: Local DB on tablet (IndexedDB/SQLite), attempt to sync when network returns.
+
+Audit logs: Who created/edited/deleted orders, payments, settings.
+
+Notifications: Optional push notifications for new kitchen orders.
+
+Example REST endpoints (minimal)
+
+POST /auth/login — returns JWT.
+
+POST /auth/pin-login — quick login via PIN.
+
+GET /menu — categories and items.
+
+POST /orders — create order.
+
+PUT /orders/:id — update order.
+
+POST /orders/:id/payments — record payment.
+
+GET /reports/daily?branch=...&date=... — daily report.
+
+GET /printers / POST /printers — printer config.
+
+POST /sync/offline — endpoint to receive queued actions from tablet.
+
+DB tables (core)
+
+users, roles, branches, terminals, menu_categories, menu_items, modifiers, orders, order_items, payments, printers, settings, audit_logs.
+
+3 — Settings & Customization (must be editable in Admin)
+
+Brand: name, logo, primary color, accent color.
+
+Receipt template: header lines, footer lines, QR code for feedback or WhatsApp.
+
+Currency, tax rates (multiple), service charges, tip defaults.
+
+Menu settings: default category ordering, show images on menu, item availability times.
+
+Table layout editor: drag-and-drop map inside Admin.
+
+Language switch & RTL toggle.
+
+Printer settings: add/edit printer (name, connectionType: bluetooth | usb | network, model, ESC/POS or text template).
+
+Terminal-level overrides (per-tablet settings).
+
+Permissions: restrict voiding items, discount percentages by role.
+
+4 — Print Integration (detailed)
+
+Requirements: Support thermal printers via ESC/POS; support Bluetooth Classic & BLE discovery/use, and USB printers. Allow Admin to configure printers per terminal.
+
+Implementation approach (cross-platform)
+
+Abstraction layer: implement PrinterService in the app that exposes consistent methods:
+
+listDevices() → enumerates Bluetooth & USB printers.
+
+connect(deviceId) → connect to chosen device.
+
+printReceipt(payload) → sends ESC/POS bytes or PDF fallback.
+
+disconnect(), status().
+
+Bluetooth detection / connection:
+
+Use a single abstraction that picks the native library per platform:
+
+Android (native / React Native): use Android BluetoothAdapter / BluetoothSocket (classic) and support BLE scanning for BLE-capable printers.
+
+iOS: CoreBluetooth (BLE) and ExternalAccessory (for MFi/accessory devices). Note: iOS classic Bluetooth for non-MFi printers is limited; prefer AirPrint or network printers on iOS.
+
+Web (PWA on tablet): Web Bluetooth API where supported; fallback to Cloud Print or server-side print job to a network printer.
+
+On multi-platform projects, use cross-platform plugins that wrap native APIs (e.g., React Native plugins or Capacitor plugins). The app layer calls PrinterService.listDevices() — the native plugin handles platform differences.
+
+USB printing:
+
+Android: use Android USB Host API to enumerate USB printers and open a raw connection to send ESC/POS commands.
+
+iOS: USB support is limited; prefer network or AirPrint. If iPad with USB-C supports accessories, you may need MFi or vendor SDKs.
+
+Web: Use WebUSB where supported; otherwise recommend a local print helper app/agent that receives jobs from tablet via local network.
+
+Protocol: ESC/POS raw commands for receipts (line feeds, cut command, QR code). Also support generating PDF for A4 printing if printer not ESC/POS capable.
+
+Same library for Bluetooth detection: build or use an adapter plugin that detects both Classic & BLE devices and normalizes the devices to a single list. If using a cross-platform framework, choose a plugin that supports both or combine two native modules behind one JS/native wrapper.
+
+Printer profile: store commands like line width (chars per line), cut command, encoding (UTF-8), and special ESC/POS sequences for Arabic script shaping.
+
+Receipt design: Simple text + logo + items table + totals + VAT/tax lines + QR for payment or feedback. Arabic shaping support is required — convert UTF-8 to printer-specific encoding or use graphic rendering (render receipt as bitmap then print).
+
+Failover & testing
+
+If connection fails, show clear error and allow re-try.
+
+Queue print job and retry automatically up to N times; allow re-print from order history.
+
+Provide printer test page in settings with sample Arabic & French text.
+
+5 — Full Screen List (must build)
+
+(Organized by role / flow; each screen should be tablet-optimized)
+
+Global / Access
+
+Splash & Terminal Registration — first-run terminal register code.
+
+Login / PIN Quick Login — biometric optional.
+
+Common
+
+Main Dashboard — tables map; active orders; quick actions.
+
+Table Layout (Floor plan) — drag, open table, merge/split.
+
+Quick Order / POS Menu — category tabs, item grid, modifiers popover.
+
+Order Detail / Cart — item list, edit, add note, send to kitchen, hold.
+
+Checkout / Payments — select payment type, print receipt, split bill, apply discount.
+
+KDS (Kitchen Display) — list of incoming orders, timers, status updates, accept/complete.
+
+Orders History / Reprints — search & re-print receipts.
+
+Shift / Cash Drawer — open drawer, start shift, cash count, close shift.
+
+Reports (Manager) — sales by date/item, daily summary, staff sales.
+
+Settings (Admin) — company settings, printers, taxes, menu editor access, terminal list.
+
+Menu Editor — categories, items, modifiers, prices, availability times.
+
+Table Editor — manage floor plans, table names, capacities.
+
+Printer Settings — detect devices, test print, preferred printer per terminal.
+
+User Management — add/edit staff, PIN, role permissions.
+
+Localization — language switch + RTL preview.
+
+Help & Support — quick FAQs, contact WhatsApp.
+
+6 — UX / UI Notes (tablet & touch)
+
+Big rounded buttons (min touch target 48–64px).
+
+High contrast for primary CTA (Add, Send to Kitchen, Pay).
+
+Visual hierarchy: table name, status badge (open, ready, served), total amount large.
+
+Use icons + text for fast recognition.
+
+Toast feedback for actions (order sent, print success/fail).
+
+Undo option for last action (5–10s).
+
+Accessibility: readable font sizes, Arabic shaping and right-to-left layout support.
+
+7 — Edge Cases & Important Implementation Notes
+
+Arabic printing: ESC/POS printers may not support Arabic shaping natively — render receipt as image/bitmap for guaranteed correct Arabic display.
+
+Offline mode: queue changes locally with timestamps and device/terminal id; on conflict, prefer server last-writer-wins or present reconciliation.
+
+Security: secure printer endpoints and do not expose unrestricted raw printing from the server. Printer connections should be device-local or initiated from the tablet.
+
+PCI/Payments: do not store full card info; integrate with card terminal provider (external device) or a secure payment gateway.
+
+8 — Developer Handoff / Deliverables
+
+Backend: API + DB migrations + Dockerfile + Postman collection.
+
+Mobile/Web app: codebase (React Native or PWA) with PrinterService abstraction.
+
+Admin web: menu & settings pages.
+
+Documentation: setup guide for printers, terminal onboarding doc, and test cases.
+
+QA checklist: order flow tests, print tests (Bluetooth & USB), offline sync tests, language tests (Arabic/French).
+
+9 — Acceptance Criteria (how you verify)
+
+Add an order and send to kitchen within 3 taps for common items.
+
+Print a receipt from tablet to a Bluetooth printer with Arabic text rendered correctly.
+
+Add/modify menu item in Admin and see change reflected on tablet within 10s (or when synced).
+
+Offline order created on tablet successfully syncs when network returns.
+
+Admin can add a printer and perform a successful test print (USB & Bluetooth devices covered).

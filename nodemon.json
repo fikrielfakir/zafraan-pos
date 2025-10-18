@@ -1,0 +1,11 @@
+{
+  "watch": ["server"],
+  "ext": "ts,js",
+  "ignore": [
+    "**/*.timestamp-*.mjs",
+    "node_modules/**",
+    "client/**",
+    "dist/**"
+  ],
+  "exec": "tsx server/index.ts"
+}

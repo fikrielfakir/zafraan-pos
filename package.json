@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch --clear-screen=false server/index.ts",
+    "dev": "nodemon",
     "build": "vite build --outDir dist/public",
     "start": "NODE_ENV=production tsx server/index.ts",
     "lint": "eslint ."
@@ -51,6 +51,7 @@
     "input-otp": "^1.4.2",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
+    "nodemon": "^3.1.10",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",

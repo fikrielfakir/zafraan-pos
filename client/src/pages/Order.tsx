@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,8 +47,9 @@ interface OrderItem extends MenuItem {
 }
 
 const Order = () => {
-  const navigate = useNavigate();
-  const { tableId = "takeaway" } = useParams();
+  const [, setLocation] = useLocation();
+  const params = useParams();
+  const tableId = params.tableId || "takeaway";
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   
   const menuItems: MenuItem[] = [
@@ -115,7 +116,7 @@ const Order = () => {
       toast.error("Please add items to order");
       return;
     }
-    navigate(`/checkout/${tableId}`, { state: { orderItems, total } });
+    setLocation(`/checkout/${tableId}`);
   };
 
   const handleSendToKitchen = () => {
@@ -143,7 +144,7 @@ const Order = () => {
       <header className="bg-card border-b border-border shadow-soft sticky top-0 z-10">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
+            <Button variant="ghost" size="icon" onClick={() => setLocation("/dashboard")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
